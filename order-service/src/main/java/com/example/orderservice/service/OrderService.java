@@ -5,6 +5,7 @@ import com.example.orderservice.common.TransactionRequest;
 import com.example.orderservice.common.TransactionResponse;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.repository.OrderRepository;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class OrderService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @HystrixCommand(fallbackMethod = "paymentServiceDown")
     public TransactionResponse saveOrder(TransactionRequest request){
         String orderReponse;
         Order order = request.getOrder();
@@ -34,6 +36,15 @@ public class OrderService {
         transactionResponse.setAmount(order.getPrice());
         transactionResponse.setTransactionId(paymentReponse.getTransactionId());
         transactionResponse.setOrderStatus(orderReponse);
+        return transactionResponse;
+    }
+
+    public TransactionResponse paymentServiceDown(TransactionRequest request){
+
+        TransactionResponse transactionResponse = new TransactionResponse();
+        transactionResponse.setOrderStatus("Failed- Payment service unavailable");
+        transactionResponse.setOrder(request.getOrder());
+        transactionResponse.setTransactionId(null);
         return transactionResponse;
     }
 }
