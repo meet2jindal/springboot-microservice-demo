@@ -7,18 +7,26 @@ import com.example.orderservice.entity.Order;
 import com.example.orderservice.repository.OrderRepository;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@RefreshScope
 public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
+    @Lazy
     private RestTemplate restTemplate;
 
+    @Value("${microservice.payment-service.endpoints.endpoint.uri}")
+    private String PAYMENT_SERVICE_ENDPOINT;
     @HystrixCommand(fallbackMethod = "paymentServiceDown")
     public TransactionResponse saveOrder(TransactionRequest request) {
         String orderReponse;
@@ -27,7 +35,7 @@ public class OrderService {
         payment.setOrderId(order.getId());
         payment.setAmount(order.getPrice());
 
-        Payment paymentReponse = restTemplate.postForObject("http://PAYMENT-SERVICE/payment/doPayment", payment, Payment.class);
+        Payment paymentReponse = restTemplate.postForObject(PAYMENT_SERVICE_ENDPOINT, payment, Payment.class);
         orderReponse = paymentReponse != null && paymentReponse.getPaymentStatus().equals("success") ? "Order success" : "order fail";
         orderRepository.save(order);
         TransactionResponse transactionResponse = new TransactionResponse();

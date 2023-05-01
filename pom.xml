@@ -8,8 +8,11 @@
   <url>http://maven.apache.org</url>
   <packaging>pom</packaging>
   <modules>
+    <!--<module>config-server</module>
+    <module>cloud-gateway</module>-->
     <module>payment-service</module>
     <module>order-service</module>
     <module>service-registry</module>
+
   </modules>
 </project>
