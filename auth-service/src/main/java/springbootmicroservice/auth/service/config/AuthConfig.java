@@ -21,6 +21,7 @@ import springbootmicroservice.auth.service.service.CustomUserDetailService;
 @EnableWebSecurity
 public class AuthConfig {
 
+    @Bean
     public UserDetailsService userDetailsService() {
         return new CustomUserDetailService();
     }
@@ -35,13 +36,13 @@ public class AuthConfig {
         return config.getAuthenticationManager();
     }
 
-   /* @Bean
+    @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
-    }*/
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
